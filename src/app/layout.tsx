@@ -1,32 +1,27 @@
 // src/app/layout.tsx
-import { AuthProvider } from "@/context/AuthContext";
-import AuthenticatedLayout from "@/components/AuthenticatedLayout";
-import './globals.css';
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer } from 'react-toastify';
+import { Inter } from "next/font/google";
+import "@/app/globals.css";
+import { ReactNode } from "react";
+import ClientLayout from "@/components/client/ClientLayout";
+import { LayoutProvider } from "@/context/LayoutContext";
+import {AuthProvider} from "@/context/AuthContext";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-    console.log("RootLayout rendu, children:", children);
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata = {
+    title: "Wariprono",
+    description: "Application de paris sports, programmes, pronostics et résultats",
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
     return (
         <html lang="fr">
-        <body>
-        <AuthProvider>
-            <AuthenticatedLayout>
-                {children}
-            </AuthenticatedLayout>
-            <ToastContainer
-                position="top-right"
-                autoClose={5000}
-                hideProgressBar={false}
-                newestOnTop={false}
-                closeOnClick
-                rtl={false}
-                pauseOnFocusLoss
-                draggable
-                pauseOnHover
-                theme="light"
-            />
-        </AuthProvider>
+        <body className={inter.className}>
+        <LayoutProvider>
+            <AuthProvider>
+                <ClientLayout>{children}</ClientLayout>
+            </AuthProvider>
+        </LayoutProvider>
         </body>
         </html>
     );

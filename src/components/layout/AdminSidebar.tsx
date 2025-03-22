@@ -47,6 +47,11 @@ export default function AdminSidebar() {
                             Types de jeux
                         </Link>
                     </li>
+                    <li className="mb-2">
+                        <Link href="/admin/countries" className="block p-2 hover:bg-gray-700 rounded">
+                            Pays
+                        </Link>
+                    </li>
                     <li className="mt-4">
                         <button
                             onClick={logoutUser}

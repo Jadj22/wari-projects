@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import AdminSidebar from "@/components/layout/AdminSidebar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-    const { user, loading, isLoggingOut } = useAuth();
+    const { user, loading, isLoggingOut, hasRole, logoutUser } = useAuth();
     const pathname = usePathname();
 
     console.log("AdminLayout rendu, user:", user, "loading:", loading, "isLoggingOut:", isLoggingOut, "pathname:", pathname);
@@ -21,7 +21,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         return null;
     }
 
-    if (user.role !== "admin" && user.role !== "editor") {
+    const isAdminOrEditor = hasRole("admin") || hasRole("editor");
+    const isViewer = hasRole("viewer");
+
+    // Pages accessibles en lecture seule pour les viewers (si tu veux les ajouter plus tard)
+    const readOnlyPaths = ["/admin/dashboard", "/admin/programs", "/admin/games", "/admin/predictions", "/admin/results"];
+    const isReadOnlyPath = readOnlyPaths.includes(pathname);
+
+    if (!isAdminOrEditor && !isViewer) {
         console.log("AdminLayout: Rôle non autorisé, affichage d'un message d'erreur. Rôle actuel:", user.role);
         return (
             <div className="flex items-center justify-center min-h-screen bg-gray-100">
@@ -29,9 +36,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <h1 className="text-2xl font-bold text-red-600">Accès non autorisé</h1>
                     <p className="mt-2">Votre rôle ({user.role}) ne vous permet pas d'accéder à cette page.</p>
                     <p className="mt-2">
-                        <a href="/admin/login" className="text-blue-500 hover:underline">
+                        <button
+                            onClick={() => logoutUser()}
+                            className="text-blue-500 hover:underline"
+                        >
                             Retour à la connexion
-                        </a>
+                        </button>
                     </p>
                 </div>
             </div>
@@ -41,8 +51,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     console.log("AdminLayout: Utilisateur autorisé, rendu de la sidebar et des children");
     return (
         <div className="flex min-h-screen">
-            <AdminSidebar />
-            <main className="flex-1 p-6">{children}</main>
+            {(isAdminOrEditor || !isReadOnlyPath) && <AdminSidebar />}
+            <main className="flex-1 p-6">
+                {isViewer && isReadOnlyPath && (
+                    <div className="mb-4 p-2 bg-yellow-100 text-yellow-800 rounded">
+                        Mode lecture seule : Vous ne pouvez pas modifier les données.
+                    </div>
+                )}
+                {children}
+            </main>
         </div>
     );
 }

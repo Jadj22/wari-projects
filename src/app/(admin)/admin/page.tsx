@@ -1,4 +1,4 @@
-// src/app/(admin)/admin/page.tsx
+// src/app/(admin)/admin/page.tsx.tsx
 "use client";
 
 import { useEffect } from "react";

@@ -1,33 +1,41 @@
-// src/app/(admin)/admin/login/page.tsx
 "use client";
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const { loginUser } = useAuth();
+    const [loading, setLoading] = useState(false);
+    const { loginUser, user } = useAuth();
+    const router = useRouter();
+
+    // Rediriger si déjà connecté
+    if (user) {
+        router.push("/admin/dashboard");
+        return null;
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         try {
             await loginUser(username, password);
         } catch (error) {
-            toast.error("Échec de la connexion. Vérifiez vos identifiants.", {
-                position: "top-right",
-                autoClose: 5000,
-            });
+            toast.error("Échec de la connexion. Vérifiez vos identifiants.");
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-100">
             <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-                <h1 className="text-2xl font-bold mb-6 text-center">Connexion Admin</h1>
-                <form onSubmit={handleSubmit}>
-                    <div className="mb-4">
+                <h1 className="text-2xl font-bold mb-6 text-center text-gray-800">Connexion Admin</h1>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div>
                         <label htmlFor="username" className="block text-sm font-medium text-gray-700">
                             Nom d'utilisateur
                         </label>
@@ -36,11 +44,12 @@ export default function LoginPage() {
                             id="username"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                             required
+                            disabled={loading}
                         />
                     </div>
-                    <div className="mb-6">
+                    <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                             Mot de passe
                         </label>
@@ -49,15 +58,19 @@ export default function LoginPage() {
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
                             required
+                            disabled={loading}
                         />
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
+                        disabled={loading}
+                        className={`w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700 ${
+                            loading ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
                     >
-                        Se connecter
+                        {loading ? "Connexion en cours..." : "Se connecter"}
                     </button>
                 </form>
             </div>
