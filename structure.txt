@@ -1,0 +1,84 @@
+F:\wari-projects\
+├── src/
+│   ├── app/
+│   │   ├── (admin)/
+│   │   │   ├── admin/
+│   │   │   │   ├── layout.tsx              # Layout admin avec sidebar et protection des rôles
+│   │   │   │   ├── login/
+│   │   │   │   │   └── page.tsx           # Page de connexion pour les admins
+│   │   │   │   ├── programs/
+│   │   │   │   │   ├── new/
+│   │   │   │   │   │   └── page.tsx       # Page pour ajouter un programme (admin/editor)
+│   │   │   │   │   ├── [id]/
+│   │   │   │   │   │   └── edit/
+│   │   │   │   │   │       └── page.tsx   # Page pour modifier un programme (admin/editor)
+│   │   │   │   │   └── page.tsx           # Liste des programmes (admin/editor)
+│   │   │   │   ├── games/
+│   │   │   │   │   ├── new/
+│   │   │   │   │   │   └── page.tsx       # Page pour ajouter un jeu (admin/editor)
+│   │   │   │   │   ├── [id]/
+│   │   │   │   │   │   └── edit/
+│   │   │   │   │   │       └── page.tsx   # Page pour modifier un jeu (admin/editor)
+│   │   │   │   │   └── page.tsx           # Liste des jeux (admin/editor)
+│   │   │   │   ├── predictions/
+│   │   │   │   │   ├── new/
+│   │   │   │   │   │   └── page.tsx       # Page pour ajouter une prédiction (admin/editor)
+│   │   │   │   │   ├── [id]/
+│   │   │   │   │   │   └── edit/
+│   │   │   │   │   │       └── page.tsx   # Page pour modifier une prédiction (admin/editor)
+│   │   │   │   │   └── page.tsx           # Liste des prédictions (admin/editor)
+│   │   │   │   ├── results/
+│   │   │   │   │   ├── new/
+│   │   │   │   │   │   └── page.tsx       # Page pour ajouter un résultat (admin/editor)
+│   │   │   │   │   ├── [id]/
+│   │   │   │   │   │   └── edit/
+│   │   │   │   │   │       └── page.tsx   # Page pour modifier un résultat (admin/editor)
+│   │   │   │   │   └── page.tsx           # Liste des résultats (admin/editor)
+│   │   │   │   ├── users/
+│   │   │   │   │   └── page.tsx           # Gestion des utilisateurs (admin uniquement)
+│   │   │   │   ├── game-types/
+│   │   │   │   │   └── page.tsx           # Gestion des types de jeux (admin/editor)
+│   │   │   │   ├── dashboard/
+│   │   │   │   │   └── page.tsx           # Page du tableau de bord admin
+│   │   │   │   └── page.tsx               # Page racine /admin (redirige vers /admin/dashboard)
+│   │   ├── categories/
+│   │   │   ├── [slug]/
+│   │   │   │   └── page.tsx               # Détails d'une catégorie (CategoryDetailPage)
+│   │   │   └── page.tsx                   # Liste des catégories (CategoriesPage)
+│   │   ├── programmes/
+│   │   │   ├── [id]/
+│   │   │   │   └── page.tsx               # Détails d'un programme (client)
+│   │   │   └── page.tsx                   # Liste des programmes (client)
+│   │   ├── pronostics/
+│   │   │   ├── [id]/
+│   │   │   │   └── page.tsx               # Détails d'une prédiction (client)
+│   │   │   └── page.tsx                   # Liste des prédictions (client)
+│   │   ├── resultats/
+│   │   │   ├── [id]/
+│   │   │   │   └── page.tsx               # Détails d'un résultat (client)
+│   │   │   └── page.tsx                   # Liste des résultats (client)
+│   │   ├── layout.tsx                     # Layout racine (enveloppe l'app avec AuthProvider et ClientProvider)
+│   │   ├── page.tsx                       # Page d'accueil (/)
+│   │   ├── globals.css                    # Styles globaux
+│   │   └── not-found.tsx                  # Page 404 personnalisée
+│   ├── components/
+│   │   ├── client/
+│   │   │   ├── Card.tsx                   # Composant Card pour afficher programmes, prédictions, résultats, jeux
+│   │   │   └── Footer.tsx                 # Pied de page pour les pages client
+│   │   ├── layout/
+│   │   │   └── AdminSidebar.tsx           # Sidebar pour les pages admin
+│   │   └── AuthenticatedLayout.tsx        # Composant pour gérer le chargement et l'authentification
+│   ├── context/
+│   │   ├── AuthContext.tsx                # Contexte pour gérer l'authentification et les rôles
+│   │   └── ClientContext.tsx              # Contexte pour gérer les données client (jeux, programmes, etc.)
+│   ├── services/
+│   │   └── api/
+│   │       ├── adminApi.ts                # Fonctions API pour les appels admin (avec token)
+│   │       └── clientApi.ts               # Fonctions API pour les appels client (public)
+│   ├── types/
+│   │   └── model.ts                       # Types TypeScript pour les modèles (Game, Program, Prediction, Result, etc.)
+│   └── globals.css                        # Styles globaux (déplacé ici si pas dans app/)
+├── middleware.ts                          # Middleware pour protéger les routes admin
+├── package.json                           # Dépendances et scripts du projet
+├── tailwind.config.js                     # Configuration Tailwind CSS
+└── tsconfig.json                          # Configuration TypeScript (probable)
