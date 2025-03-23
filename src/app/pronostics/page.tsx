@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import { useClient } from "@/context/ClientContext";
-import SkeletonCard from "@/components/SkeletonCard";
+import SkeletonCard from "../../components/client/SkeletonCard";
 import Link from "next/link";
 
 export default function Pronostics() {
