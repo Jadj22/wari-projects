@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import { useClient } from "@/context/ClientContext";
-import SkeletonCard from "@/components/SkeletonCard";
+//import SkeletonCard from "@/components/SkeletonCard";
 import Link from "next/link";
 
 export default function Pronostics() {
@@ -24,8 +24,8 @@ export default function Pronostics() {
             <div className="container mx-auto py-8">
                 <h1 className="text-3xl font-bold mb-6">Pronostics</h1>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(3)].map((_, index) => (
-                        <SkeletonCard key={index} />
+{/*                     {[...Array(3)].map((_, index) => (
+                        <SkeletonCard key={index} /> */}
                     ))}
                 </div>
             </div>
