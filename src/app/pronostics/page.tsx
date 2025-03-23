@@ -1,10 +1,10 @@
-// src/app/pronostics/page.tsx
 "use client";
 
 import { useEffect } from "react";
 import { useClient } from "@/context/ClientContext";
 import SkeletonCard from "../../components/client/SkeletonCard";
 import Link from "next/link";
+import { Prediction } from "@/types/model"; // Importer le type Prediction
 
 export default function Pronostics() {
     const { predictions, loading, error, hasMorePredictions, fetchPredictionsData, predictionsPage } = useClient();
@@ -49,12 +49,12 @@ export default function Pronostics() {
             ) : (
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {predictions.map((prediction) => (
+                        {predictions.map((prediction: Prediction) => (
                             <Link href={`/pronostics/${prediction.id}`} key={prediction.id}>
                                 <div className="border p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
                                     <h2 className="text-xl font-semibold">{prediction.game_name || "Jeu inconnu"}</h2>
                                     <p>Prédiction : {prediction.description || "N/A"}</p>
-                                    <p>Par : {prediction.author?.username || "Anonyme"}</p>
+                                    <p>Par : {prediction.author || "Anonyme"}</p> {/* Correction ici */}
                                     <p>Date : {new Date(prediction.predicted_at).toLocaleDateString("fr-FR")}</p>
                                 </div>
                             </Link>
