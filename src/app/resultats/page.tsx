@@ -1,4 +1,3 @@
-// src/app/resultats/page.tsx
 "use client";
 
 import { motion } from "framer-motion";
@@ -53,7 +52,7 @@ export default function ResultatsPage() {
                                             day: "2-digit",
                                             month: "short",
                                         })}
-                                        location={result.game?.name || "Jeu inconnu"} // Assurez-vous que game est bien inclus dans ResultSerializer
+                                        location={result.game || "Jeu inconnu"} // Correction : utiliser le slug directement
                                         description={
                                             result.outcome_details?.score
                                                 ? `Score: ${result.outcome_details.score}`
