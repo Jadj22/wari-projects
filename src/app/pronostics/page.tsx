@@ -52,7 +52,7 @@ export default function Pronostics() {
                         {predictions.map((prediction) => (
                             <Link href={`/pronostics/${prediction.id}`} key={prediction.id}>
                                 <div className="border p-4 rounded-lg shadow hover:shadow-lg transition-shadow">
-                                    <h2 className="text-xl font-semibold">{prediction.game?.name || "Jeu inconnu"}</h2>
+                                    <h2 className="text-xl font-semibold">{prediction.game_name || "Jeu inconnu"}</h2>
                                     <p>Prédiction : {prediction.description || "N/A"}</p>
                                     <p>Par : {prediction.author?.username || "Anonyme"}</p>
                                     <p>Date : {new Date(prediction.predicted_at).toLocaleDateString("fr-FR")}</p>
