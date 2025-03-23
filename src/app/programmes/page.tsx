@@ -47,7 +47,7 @@ export default function ProgrammesPage() {
                     </div>
                 ) : programs.length === 0 ? (
                     <div className="text-center">
-                        <p>Aucun programme disponible pour le moment.</p>
+                        <p>Aucun programme disponible pour le moment....</p>
                     </div>
                 ) : (
                     <>
