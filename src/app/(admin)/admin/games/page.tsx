@@ -24,6 +24,7 @@ interface Game {
     country: Country;
     is_active: boolean;
     created_at: string;
+    description: string;
 }
 
 export default function GamesPage() {

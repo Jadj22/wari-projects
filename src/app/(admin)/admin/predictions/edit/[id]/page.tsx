@@ -95,10 +95,11 @@ export default function EditPredictionPage() {
             toast.success("Prédiction mise à jour avec succès !");
             router.push("/admin/predictions");
         } catch (error: any) {
+            const errors = error.response?.data;
             const message =
-                error.response?.data?.description?.[0] ||
-                error.response?.data?.game?.[0] ||
-                error.response?.data?.detail ||
+                errors?.description?.[0] ||
+                errors?.game?.[0] ||
+                errors?.detail ||
                 "Erreur lors de la mise à jour de la prédiction.";
             toast.error(message);
         } finally {

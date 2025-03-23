@@ -2,26 +2,39 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { fetchProgramById } from "@/services/api/clientApi";
 import { Program } from "@/types/model";
 
 export default function ProgramDetailPage() {
     const { id } = useParams();
+    const router = useRouter();
     const [program, setProgram] = useState<Program | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchProgramDetails = async () => {
+            // Vérifier si id est un nombre valide
+            const programId = parseInt(id as string, 10);
+            if (isNaN(programId)) {
+                setError("ID de programme invalide.");
+                setLoading(false);
+                return;
+            }
+
             try {
                 setLoading(true);
-                const data = await fetchProgramById(Number(id));
+                const data = await fetchProgramById(programId);
                 if (data) {
                     setProgram(data);
+                } else {
+                    setError("Programme non trouvé.");
                 }
             } catch (error) {
                 console.error("Erreur lors de la récupération des détails du programme:", error);
+                setError("Impossible de charger le programme. Veuillez réessayer plus tard.");
             } finally {
                 setLoading(false);
             }
@@ -29,6 +42,9 @@ export default function ProgramDetailPage() {
 
         if (id) {
             fetchProgramDetails();
+        } else {
+            setError("Aucun ID de programme fourni.");
+            setLoading(false);
         }
     }, [id]);
 
@@ -37,6 +53,16 @@ export default function ProgramDetailPage() {
             <main className="bg-gray-900 text-white min-h-screen py-16">
                 <div className="max-w-7xl mx-auto px-6 text-center">
                     <p>Chargement...</p>
+                </div>
+            </main>
+        );
+    }
+
+    if (error) {
+        return (
+            <main className="bg-gray-900 text-white min-h-screen py-16">
+                <div className="max-w-7xl mx-auto px-6 text-center">
+                    <p className="text-red-500">{error}</p>
                 </div>
             </main>
         );
@@ -61,7 +87,7 @@ export default function ProgramDetailPage() {
                     transition={{ duration: 0.8 }}
                     className="text-4xl font-bold tracking-wide uppercase mb-6"
                 >
-                    Programme : {program.game_name}
+                    Programme : {program.game_name || "Programme inconnu"}
                 </motion.h1>
                 <motion.div
                     initial={{ opacity: 0 }}

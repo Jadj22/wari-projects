@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react"; // Ajouter useEffect
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
@@ -12,9 +12,15 @@ export default function LoginPage() {
     const { loginUser, user } = useAuth();
     const router = useRouter();
 
-    // Rediriger si déjà connecté
+    // Rediriger si déjà connecté, mais dans un useEffect
+    useEffect(() => {
+        if (user) {
+            router.push("/admin/dashboard");
+        }
+    }, [user, router]); // Dépendances : user et router
+
+    // Si l'utilisateur est connecté, ne rien rendre (optionnel, car la redirection est déjà gérée)
     if (user) {
-        router.push("/admin/dashboard");
         return null;
     }
 

@@ -25,7 +25,6 @@ export default function CreatePredictionPage() {
     const [loading, setLoading] = useState(true);
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/";
-
     const canEdit = hasRole("admin") || hasRole("editor");
 
     useEffect(() => {
@@ -35,7 +34,6 @@ export default function CreatePredictionPage() {
                 setLoading(false);
                 return;
             }
-
             try {
                 const response = await axios.get(`${API_URL}admin/games/`, {
                     headers: { Authorization: `Bearer ${accessToken}` },
@@ -63,6 +61,17 @@ export default function CreatePredictionPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation côté client
+        if (!formData.game) {
+            toast.error("Veuillez sélectionner un jeu.");
+            return;
+        }
+        if (formData.description.trim().length < 15) {
+            toast.error("La description doit contenir au moins 15 caractères.");
+            return;
+        }
+
         setLoading(true);
         const accessToken = Cookies.get("accessToken");
 
@@ -73,11 +82,17 @@ export default function CreatePredictionPage() {
             toast.success("Prédiction créée avec succès !");
             router.push("/admin/predictions");
         } catch (error: any) {
-            const message =
-                error.response?.data?.description?.[0] ||
-                error.response?.data?.game?.[0] ||
-                error.response?.data?.detail ||
-                "Erreur lors de la création de la prédiction.";
+            let message = "Erreur lors de la création de la prédiction.";
+            if (error.response) {
+                const errors = error.response.data;
+                message =
+                    errors?.description?.[0] ||
+                    errors?.game?.[0] ||
+                    errors?.detail ||
+                    "Une erreur s’est produite sur le serveur.";
+            } else if (error.request) {
+                message = "Impossible de contacter le serveur. Vérifiez votre connexion.";
+            }
             toast.error(message);
         } finally {
             setLoading(false);

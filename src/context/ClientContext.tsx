@@ -13,12 +13,16 @@ interface ClientContextType {
     programs: Program[];
     results: Result[];
     loading: boolean;
-    error: string | null; // Ajout d'un état pour les erreurs
+    error: string | null;
+    predictionsPage: number;
+    hasMorePredictions: boolean;
+    programsPage: number;
+    hasMorePrograms: boolean;
     fetchGamesData: (filters?: any) => Promise<void>;
     fetchGameTypesData: (filters?: any) => Promise<void>;
     fetchCountriesData: (filters?: any) => Promise<void>;
-    fetchPredictionsData: (filters?: any) => Promise<void>;
-    fetchProgramsData: (filters?: any) => Promise<void>;
+    fetchPredictionsData: (filters?: any, page?: number) => Promise<void>;
+    fetchProgramsData: (filters?: any, page?: number) => Promise<void>;
     fetchResultsData: (filters?: any) => Promise<void>;
 }
 
@@ -32,17 +36,21 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
     const [programs, setPrograms] = useState<Program[]>([]);
     const [results, setResults] = useState<Result[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null); // État pour les erreurs
+    const [error, setError] = useState<string | null>(null);
+    const [predictionsPage, setPredictionsPage] = useState(1);
+    const [hasMorePredictions, setHasMorePredictions] = useState(true);
+    const [programsPage, setProgramsPage] = useState(1);
+    const [hasMorePrograms, setHasMorePrograms] = useState(true);
 
     const fetchGamesData = async (filters = {}) => {
         try {
             setLoading(true);
-            setError(null); // Réinitialiser l'erreur
+            setError(null);
             const response = await fetchGames(filters);
-            setGames(response.results);
-        } catch (error) {
+            setGames(response.results || []);
+        } catch (error: any) {
             console.error("Erreur lors de la récupération des jeux:", error);
-            setError("Impossible de charger les jeux. Veuillez réessayer plus tard.");
+            setError(error.response?.data?.detail || "Impossible de charger les jeux. Veuillez réessayer plus tard.");
         } finally {
             setLoading(false);
         }
@@ -53,10 +61,10 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
             setLoading(true);
             setError(null);
             const response = await fetchGameTypes(filters);
-            setGameTypes(response.results);
-        } catch (error) {
+            setGameTypes(response.results || []);
+        } catch (error: any) {
             console.error("Erreur lors de la récupération des types de jeux:", error);
-            setError("Impossible de charger les types de jeux. Veuillez réessayer plus tard.");
+            setError(error.response?.data?.detail || "Impossible de charger les types de jeux. Veuillez réessayer plus tard.");
         } finally {
             setLoading(false);
         }
@@ -67,38 +75,50 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
             setLoading(true);
             setError(null);
             const response = await fetchCountries(filters);
-            setCountries(response.results);
-        } catch (error) {
+            setCountries(response.results || []);
+        } catch (error: any) {
             console.error("Erreur lors de la récupération des pays:", error);
-            setError("Impossible de charger les pays. Veuillez réessayer plus tard.");
+            setError(error.response?.data?.detail || "Impossible de charger les pays. Veuillez réessayer plus tard.");
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchPredictionsData = async (filters = {}) => {
+    const fetchPredictionsData = async (filters = {}, page = 1) => {
         try {
             setLoading(true);
             setError(null);
-            const response = await fetchPredictions(filters);
-            setPredictions(response.results);
-        } catch (error) {
+            const response = await fetchPredictions({ ...filters, page });
+            if (page === 1) {
+                setPredictions(response.results || []);
+            } else {
+                setPredictions((prev) => [...prev, ...(response.results || [])]);
+            }
+            setPredictionsPage(page);
+            setHasMorePredictions(!!response.next);
+        } catch (error: any) {
             console.error("Erreur lors de la récupération des pronostics:", error);
-            setError("Impossible de charger les pronostics. Veuillez réessayer plus tard.");
+            setError(error.response?.data?.detail || "Impossible de charger les pronostics. Veuillez réessayer plus tard.");
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchProgramsData = async (filters = {}) => {
+    const fetchProgramsData = async (filters = {}, page = 1) => {
         try {
             setLoading(true);
             setError(null);
-            const response = await fetchPrograms(filters);
-            setPrograms(response.results);
-        } catch (error) {
+            const response = await fetchPrograms({ ...filters, page });
+            if (page === 1) {
+                setPrograms(response.results || []);
+            } else {
+                setPrograms((prev) => [...prev, ...(response.results || [])]);
+            }
+            setProgramsPage(page);
+            setHasMorePrograms(!!response.next);
+        } catch (error: any) {
             console.error("Erreur lors de la récupération des programmes:", error);
-            setError("Impossible de charger les programmes. Veuillez réessayer plus tard.");
+            setError(error.response?.data?.detail || "Impossible de charger les programmes. Veuillez réessayer plus tard.");
         } finally {
             setLoading(false);
         }
@@ -109,23 +129,22 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
             setLoading(true);
             setError(null);
             const response = await fetchResults(filters);
-            setResults(response.results);
-        } catch (error) {
+            setResults(response.results || []);
+        } catch (error: any) {
             console.error("Erreur lors de la récupération des résultats:", error);
-            setError("Impossible de charger les résultats. Veuillez réessayer plus tard.");
+            setError(error.response?.data?.detail || "Impossible de charger les résultats. Veuillez réessayer plus tard.");
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        // Charger les données initiales au montage
         Promise.all([
             fetchGamesData({ is_active: true }),
             fetchGameTypesData(),
             fetchCountriesData(),
-            fetchPredictionsData({ is_published: true }),
-            fetchProgramsData({ is_published: true }),
+            fetchPredictionsData({ is_published: true }, 1),
+            fetchProgramsData({ is_published: true }, 1),
             fetchResultsData({ status__in: ["official", "disputed"] }),
         ]);
     }, []);
@@ -140,7 +159,11 @@ export const ClientProvider = ({ children }: { children: ReactNode }) => {
                 programs,
                 results,
                 loading,
-                error, // Ajout de l'erreur au contexte
+                error,
+                predictionsPage,
+                hasMorePredictions,
+                programsPage,
+                hasMorePrograms,
                 fetchGamesData,
                 fetchGameTypesData,
                 fetchCountriesData,

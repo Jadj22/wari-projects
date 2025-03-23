@@ -1,36 +1,35 @@
+// src/app/(admin)/admin/predictions/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import Link from "next/link";
 
-interface Prediction {
-    id: number;
-    game_name: string;
-    description: string;
-    predicted_at: string;
-    author_display: string;
-    is_published: boolean;
-}
-
 export default function PredictionsPage() {
     const { user, hasRole } = useAuth();
-    const [predictions, setPredictions] = useState<Prediction[]>([]);
+    const [predictions, setPredictions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
 
     const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/";
-
-    const canEdit = hasRole("admin") || hasRole("editor");
+    const canView = hasRole("admin") || hasRole("editor");
 
     useEffect(() => {
         const fetchPredictions = async () => {
             const accessToken = Cookies.get("accessToken");
-            if (!accessToken || !user) {
+            if (!accessToken) {
+                toast.error("Vous devez être connecté pour accéder à cette page.", {
+                    position: "top-right",
+                    autoClose: 5000,
+                });
+                setLoading(false);
+                return;
+            }
+            if (!user) {
                 setLoading(false);
                 return;
             }
@@ -40,11 +39,14 @@ export default function PredictionsPage() {
                     headers: { Authorization: `Bearer ${accessToken}` },
                     params: { page },
                 });
-                setPredictions(response.data.results);
-                setTotalPages(Math.ceil(response.data.count / 20));
-            } catch (error) {
-                console.error("Erreur lors de la récupération des prédictions:", error);
-                toast.error("Erreur lors de la récupération des prédictions.");
+                setPredictions(response.data.results || []);
+            } catch (error: any) {
+                console.error("Erreur lors de la récupération des pronostics:", error);
+                setError(error.response?.data?.detail || "Erreur lors de la récupération des pronostics.");
+                toast.error(error.response?.data?.detail || "Erreur lors de la récupération des pronostics.", {
+                    position: "top-right",
+                    autoClose: 5000,
+                });
             } finally {
                 setLoading(false);
             }
@@ -52,135 +54,89 @@ export default function PredictionsPage() {
         fetchPredictions();
     }, [user, page]);
 
-    const togglePublish = async (predictionId: number, isPublished: boolean) => {
-        const accessToken = Cookies.get("accessToken");
-        try {
-            await axios.patch(
-                `${API_URL}admin/predictions/${predictionId}/`,
-                { is_published: !isPublished },
-                { headers: { Authorization: `Bearer ${accessToken}` } }
-            );
-            setPredictions((prev) =>
-                prev.map((p) => (p.id === predictionId ? { ...p, is_published: !isPublished } : p))
-            );
-            toast.success(`Prédiction ${isPublished ? "dépubliée" : "publiée"} avec succès !`);
-        } catch (error) {
-            console.error("Erreur lors de la mise à jour de la prédiction:", error);
-            toast.error("Erreur lors de la mise à jour de la prédiction.");
-        }
-    };
+    if (!canView) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <div className="text-center p-6 bg-white rounded-lg shadow-lg">
+                    <h1 className="text-2xl font-bold text-red-600">Accès non autorisé</h1>
+                    <p className="mt-2 text-gray-600">Seuls les administrateurs et éditeurs peuvent accéder à cette page.</p>
+                </div>
+            </div>
+        );
+    }
 
-    const deletePrediction = async (predictionId: number) => {
-        if (!confirm("Êtes-vous sûr de vouloir supprimer cette prédiction ?")) return;
-        const accessToken = Cookies.get("accessToken");
-        try {
-            await axios.delete(`${API_URL}admin/predictions/${predictionId}/`, {
-                headers: { Authorization: `Bearer ${accessToken}` },
-            });
-            setPredictions((prev) => prev.filter((p) => p.id !== predictionId));
-            toast.success("Prédiction supprimée avec succès !");
-        } catch (error: any) {
-            const message =
-                error.response?.data?.detail || "Erreur lors de la suppression de la prédiction.";
-            toast.error(message);
-        }
-    };
-
-    if (loading) return <p className="text-center text-lg">Chargement des prédictions...</p>;
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="text-lg text-gray-600">Chargement des pronostics...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="p-6 max-w-7xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">Liste des prédictions</h1>
-                {canEdit && (
-                    <Link
-                        href="/admin/predictions/create"
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                    >
-                        Créer une prédiction
-                    </Link>
-                )}
+        <div className="flex min-h-screen bg-gray-100">
+            <div className="w-64 bg-gray-900 text-white p-6">
+                <h2 className="text-xl font-bold mb-6">Admin</h2>
+                <nav>
+                    <ul className="space-y-2">
+                        <li><Link href="/admin/dashboard" className="block py-2 px-4 hover:bg-gray-700 rounded">Tableau de bord</Link></li>
+                        <li><Link href="/admin/programs" className="block py-2 px-4 hover:bg-gray-700 rounded">Programmes</Link></li>
+                        <li><Link href="/admin/games" className="block py-2 px-4 hover:bg-gray-700 rounded">Jeux</Link></li>
+                        <li><Link href="/admin/predictions" className="block py-2 px-4 bg-gray-700 rounded">Prédictions</Link></li>
+                        <li><Link href="/admin/results" className="block py-2 px-4 hover:bg-gray-700 rounded">Résultats</Link></li>
+                        <li><Link href="/admin/users" className="block py-2 px-4 hover:bg-gray-700 rounded">Utilisateurs</Link></li>
+                        <li><Link href="/admin/game-types" className="block py-2 px-4 hover:bg-gray-700 rounded">Types de jeu</Link></li>
+                        <li><Link href="/admin/countries" className="block py-2 px-4 hover:bg-gray-700 rounded">Pays</Link></li>
+                        <li><Link href="/logout" className="block py-2 px-4 hover:bg-gray-700 rounded">Déconnexion</Link></li>
+                    </ul>
+                </nav>
             </div>
-            {predictions.length === 0 ? (
-                <p className="text-center text-gray-500">Aucune prédiction trouvée.</p>
-            ) : (
-                <>
-                    <div className="overflow-x-auto">
-                        <table className="w-full border-collapse bg-white shadow-md rounded-lg">
-                            <thead>
-                            <tr className="bg-gray-100">
-                                <th className="p-3 text-left">ID</th>
-                                <th className="p-3 text-left">Jeu</th>
-                                <th className="p-3 text-left">Description</th>
-                                <th className="p-3 text-left">Date de prédiction</th>
-                                <th className="p-3 text-left">Auteur</th>
-                                <th className="p-3 text-left">Publié</th>
-                                {canEdit && <th className="p-3 text-left">Actions</th>}
+
+            <div className="flex-1 p-8">
+                <h1 className="text-3xl font-bold text-gray-800 mb-6">Gestion des Pronostics</h1>
+                {error ? (
+                    <div className="bg-red-100 text-red-700 p-4 rounded-lg mb-6">
+                        {error}
+                    </div>
+                ) : predictions.length === 0 ? (
+                    <p className="text-gray-600">Aucun pronostic disponible pour le moment.</p>
+                ) : (
+                    <div className="bg-white shadow-md rounded-lg p-6">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jeu</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Auteur</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="bg-white divide-y divide-gray-200">
                             {predictions.map((prediction) => (
-                                <tr key={prediction.id} className="border-b hover:bg-gray-50">
-                                    <td className="p-3">{prediction.id}</td>
-                                    <td className="p-3">{prediction.game_name}</td>
-                                    <td className="p-3">{prediction.description.slice(0, 50)}...</td>
-                                    <td className="p-3">
-                                        {new Date(prediction.predicted_at).toLocaleDateString()}
+                                <tr key={prediction.id}>
+                                    <td className="px-6 py-4 whitespace-nowrap">{prediction.game?.name || "N/A"}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{prediction.author?.username || "N/A"}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{prediction.description || "N/A"}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        {prediction.is_published ? "Publié" : "Non publié"}
                                     </td>
-                                    <td className="p-3">{prediction.author_display}</td>
-                                    <td className="p-3">{prediction.is_published ? "Oui" : "Non"}</td>
-                                    {canEdit && (
-                                        <td className="p-3 flex space-x-2">
-                                            <button
-                                                onClick={() => togglePublish(prediction.id, prediction.is_published)}
-                                                className={`px-3 py-1 rounded text-white ${
-                                                    prediction.is_published
-                                                        ? "bg-yellow-500 hover:bg-yellow-600"
-                                                        : "bg-green-500 hover:bg-green-600"
-                                                }`}
-                                            >
-                                                {prediction.is_published ? "Dépublier" : "Publier"}
-                                            </button>
-                                            <Link
-                                                href={`/admin/predictions/edit/${prediction.id}`}
-                                                className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                                            >
-                                                Modifier
-                                            </Link>
-                                            <button
-                                                onClick={() => deletePrediction(prediction.id)}
-                                                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-                                            >
-                                                Supprimer
-                                            </button>
-                                        </td>
-                                    )}
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <Link href={`/admin/predictions/edit/${prediction.id}`} className="text-blue-600 hover:underline">
+                                            Modifier
+                                        </Link>
+                                        <button className="ml-4 text-red-600 hover:underline">Supprimer</button>
+                                    </td>
                                 </tr>
                             ))}
                             </tbody>
                         </table>
                     </div>
-                    <div className="mt-6 flex justify-between items-center">
-                        <button
-                            onClick={() => setPage((p) => p - 1)}
-                            disabled={page === 1}
-                            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-50"
-                        >
-                            Précédent
-                        </button>
-                        <span className="text-gray-700">
-              Page {page} sur {totalPages}
-            </span>
-                        <button
-                            onClick={() => setPage((p) => p + 1)}
-                            disabled={page === totalPages}
-                            className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 disabled:opacity-50"
-                        >
-                            Suivant
-                        </button>
-                    </div>
-                </>
-            )}
+                )}
+            </div>
         </div>
     );
 }

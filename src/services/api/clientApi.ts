@@ -1,9 +1,9 @@
 // src/services/api/clientApi.ts
 import axios from "axios";
+import Cookies from "js-cookie";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/";
 
-// Interface pour la réponse paginée
 interface PaginatedResponse<T> {
     count: number;
     next: string | null;
@@ -11,16 +11,20 @@ interface PaginatedResponse<T> {
     results: T[];
 }
 
-// Fonction générique pour gérer les erreurs
 const handleApiError = (error: any) => {
     console.error("Erreur API:", error);
     throw error;
 };
 
-// Récupérer les jeux (actifs uniquement pour les clients)
+const getAuthHeaders = () => {
+    const accessToken = Cookies.get("accessToken");
+    return accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+};
+
 export const fetchGames = async (filters: any = {}, page: number = 1): Promise<PaginatedResponse<any>> => {
     try {
         const response = await axios.get(`${API_URL}client/games/`, {
+            headers: getAuthHeaders(),
             params: { ...filters, page },
         });
         return response.data;
@@ -30,10 +34,11 @@ export const fetchGames = async (filters: any = {}, page: number = 1): Promise<P
     }
 };
 
-// Récupérer un jeu spécifique par ID
 export const fetchGameById = async (id: number): Promise<any> => {
     try {
-        const response = await axios.get(`${API_URL}client/games/${id}/`);
+        const response = await axios.get(`${API_URL}client/games/${id}/`, {
+            headers: getAuthHeaders(),
+        });
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -41,10 +46,10 @@ export const fetchGameById = async (id: number): Promise<any> => {
     }
 };
 
-// Récupérer les types de jeux
 export const fetchGameTypes = async (filters: any = {}, page: number = 1): Promise<PaginatedResponse<any>> => {
     try {
         const response = await axios.get(`${API_URL}client/game-types/`, {
+            headers: getAuthHeaders(),
             params: { ...filters, page },
         });
         return response.data;
@@ -54,10 +59,10 @@ export const fetchGameTypes = async (filters: any = {}, page: number = 1): Promi
     }
 };
 
-// Récupérer un type de jeu spécifique par slug
 export const fetchGameTypeBySlug = async (slug: string): Promise<any> => {
     try {
         const response = await axios.get(`${API_URL}client/game-types/`, {
+            headers: getAuthHeaders(),
             params: { slug },
         });
         return response.data.results[0] || null;
@@ -67,10 +72,10 @@ export const fetchGameTypeBySlug = async (slug: string): Promise<any> => {
     }
 };
 
-// Récupérer les pays
 export const fetchCountries = async (filters: any = {}, page: number = 1): Promise<PaginatedResponse<any>> => {
     try {
         const response = await axios.get(`${API_URL}client/countries/`, {
+            headers: getAuthHeaders(),
             params: { ...filters, page },
         });
         return response.data;
@@ -80,10 +85,10 @@ export const fetchCountries = async (filters: any = {}, page: number = 1): Promi
     }
 };
 
-// Récupérer un pays spécifique par slug
 export const fetchCountryBySlug = async (slug: string): Promise<any> => {
     try {
         const response = await axios.get(`${API_URL}client/countries/`, {
+            headers: getAuthHeaders(),
             params: { slug },
         });
         return response.data.results[0] || null;
@@ -93,10 +98,10 @@ export const fetchCountryBySlug = async (slug: string): Promise<any> => {
     }
 };
 
-// Récupérer les pronostics publiés (pour les clients)
 export const fetchPredictions = async (filters: any = {}, page: number = 1): Promise<PaginatedResponse<any>> => {
     try {
         const response = await axios.get(`${API_URL}client/predictions/`, {
+            headers: getAuthHeaders(),
             params: { ...filters, page },
         });
         return response.data;
@@ -106,10 +111,11 @@ export const fetchPredictions = async (filters: any = {}, page: number = 1): Pro
     }
 };
 
-// Récupérer un pronostic spécifique par ID
 export const fetchPredictionById = async (id: number): Promise<any> => {
     try {
-        const response = await axios.get(`${API_URL}client/predictions/${id}/`);
+        const response = await axios.get(`${API_URL}client/predictions/${id}/`, {
+            headers: getAuthHeaders(),
+        });
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -117,10 +123,10 @@ export const fetchPredictionById = async (id: number): Promise<any> => {
     }
 };
 
-// Récupérer les programmes publiés (pour les clients)
 export const fetchPrograms = async (filters: any = {}, page: number = 1): Promise<PaginatedResponse<any>> => {
     try {
         const response = await axios.get(`${API_URL}client/programs/`, {
+            headers: getAuthHeaders(),
             params: { ...filters, page },
         });
         return response.data;
@@ -130,10 +136,11 @@ export const fetchPrograms = async (filters: any = {}, page: number = 1): Promis
     }
 };
 
-// Récupérer un programme spécifique par ID
 export const fetchProgramById = async (id: number): Promise<any> => {
     try {
-        const response = await axios.get(`${API_URL}client/programs/${id}/`);
+        const response = await axios.get(`${API_URL}client/programs/${id}/`, {
+            headers: getAuthHeaders(),
+        });
         return response.data;
     } catch (error) {
         handleApiError(error);
@@ -141,10 +148,10 @@ export const fetchProgramById = async (id: number): Promise<any> => {
     }
 };
 
-// Récupérer les résultats officiels ou contestés (pour les clients)
 export const fetchResults = async (filters: any = {}, page: number = 1): Promise<PaginatedResponse<any>> => {
     try {
         const response = await axios.get(`${API_URL}client/results/`, {
+            headers: getAuthHeaders(),
             params: { ...filters, page },
         });
         return response.data;
@@ -154,10 +161,11 @@ export const fetchResults = async (filters: any = {}, page: number = 1): Promise
     }
 };
 
-// Récupérer un résultat spécifique par ID
 export const fetchResultById = async (id: number): Promise<any> => {
     try {
-        const response = await axios.get(`${API_URL}client/results/${id}/`);
+        const response = await axios.get(`${API_URL}client/results/${id}/`, {
+            headers: getAuthHeaders(),
+        });
         return response.data;
     } catch (error) {
         handleApiError(error);
