@@ -1,4 +1,3 @@
-// src/app/(admin)/admin/users/page.tsx.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -7,20 +6,26 @@ import axios from "axios";
 import Cookies from "js-cookie";
 import { toast } from "react-toastify";
 import Link from "next/link";
+import { User } from "@/types/model"; // Importer le type User depuis model.ts
+
+// Étendre l'interface User pour inclure les champs supplémentaires de l'API
+interface ExtendedUser extends User {
+    email: string;
+    is_active: boolean;
+    date_joined: string;
+}
 
 export default function UsersPage() {
     const { user, hasRole } = useAuth();
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState<ExtendedUser[]>([]); // Typage explicite avec ExtendedUser
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api/";
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://93.127.203.229:8000/api/"; // URL mise à jour pour le serveur
 
-    // Vérifier si l'utilisateur a le rôle admin
     const isAdmin = hasRole("admin");
 
-    // Récupérer les utilisateurs
     useEffect(() => {
         const fetchUsers = async () => {
             const accessToken = Cookies.get("accessToken");
@@ -31,7 +36,7 @@ export default function UsersPage() {
                         params: { page },
                     });
                     setUsers(response.data.results);
-                    setTotalPages(Math.ceil(response.data.count / 20)); // Pagination standard (20 éléments par page.tsx)
+                    setTotalPages(Math.ceil(response.data.count / 20));
                 } catch (error) {
                     console.error("Erreur lors de la récupération des utilisateurs:", error);
                     toast.error("Erreur lors de la récupération des utilisateurs.", {
@@ -48,7 +53,6 @@ export default function UsersPage() {
         fetchUsers();
     }, [user, page]);
 
-    // Activer ou désactiver un utilisateur
     const toggleActive = async (userId: number, isActive: boolean) => {
         const accessToken = Cookies.get("accessToken");
         try {
@@ -60,7 +64,7 @@ export default function UsersPage() {
                 }
             );
             setUsers(
-                users.map((u: any) =>
+                users.map((u) =>
                     u.id === userId ? { ...u, is_active: !isActive } : u
                 )
             );
@@ -77,7 +81,6 @@ export default function UsersPage() {
         }
     };
 
-    // Supprimer un utilisateur
     const deleteUser = async (userId: number) => {
         if (!confirm("Êtes-vous sûr de vouloir supprimer cet utilisateur ?")) return;
         const accessToken = Cookies.get("accessToken");
@@ -85,7 +88,7 @@ export default function UsersPage() {
             await axios.delete(`${API_URL}admin/users/${userId}/`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
             });
-            setUsers(users.filter((u: any) => u.id !== userId));
+            setUsers(users.filter((u) => u.id !== userId));
             toast.success("Utilisateur supprimé avec succès !", {
                 position: "top-right",
                 autoClose: 3000,
@@ -143,12 +146,12 @@ export default function UsersPage() {
                         </tr>
                         </thead>
                         <tbody>
-                        {users.map((u: any) => (
+                        {users.map((u) => (
                             <tr key={u.id}>
                                 <td className="p-2 border">{u.id}</td>
                                 <td className="p-2 border">{u.username}</td>
                                 <td className="p-2 border">{u.email}</td>
-                                <td className="p-2 border">{u.role}</td>
+                                <td className="p-2 border">{u.role || "N/A"}</td>
                                 <td className="p-2 border">{u.is_active ? "Oui" : "Non"}</td>
                                 <td className="p-2 border">
                                     {new Date(u.date_joined).toLocaleString()}
